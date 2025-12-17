@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
+    "preformat": "prettier --write \"**/*.{jsx,tsx}\" --plugin prettier-plugin-tailwindcss",
     "format": "biome format --write"
   },
   "dependencies": {
@@ -21,6 +22,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
