@@ -1,8 +1,6 @@
 import type { FunctionComponent } from "react";
 
-type HomeProps = {};
-
-const Home: FunctionComponent<HomeProps> = () => {
+const Home: FunctionComponent = () => {
   return (
     <>
       <h1 className="h1-bold">Hello World</h1>
