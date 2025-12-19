@@ -12,9 +12,7 @@ import {
 import ROUTES from "@/constants/route";
 import NavLinks from "./NavLinks";
 
-type MobileNavigationProps = {};
-
-const MobileNavigation: FunctionComponent<MobileNavigationProps> = () => {
+const MobileNavigation: FunctionComponent = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
