@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { FunctionComponent } from "react";
+import MobileNavigation from "./MobileNavigation";
 import Theme from "./Theme";
 
 const Navbar: FunctionComponent = () => {
@@ -23,6 +24,7 @@ const Navbar: FunctionComponent = () => {
 
       <div className="flex-between gap-5">
         <Theme />
+        <MobileNavigation />
       </div>
     </nav>
   );
