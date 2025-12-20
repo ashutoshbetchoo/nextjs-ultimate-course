@@ -4,7 +4,48 @@ import LocalSearch from "@/components/search/LocalSearch";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/constants/route";
 
-const Home: FunctionComponent = async () => {
+const questions = [
+  {
+    _id: "1",
+    title: "How to learn React?",
+    description: "I want to learn React, can anyone help me?",
+    tags: [
+      { _id: "1", name: "React" },
+      { _id: "2", name: "JavaScript" },
+    ],
+    author: { _id: "1", name: "John Doe" },
+    upvotes: 10,
+    answers: 5,
+    views: 100,
+    createdAt: new Date(),
+  },
+  {
+    _id: "2",
+    title: "How to learn JavaScript?",
+    description: "I want to learn JavaScript, can anyone help me?",
+    tags: [
+      { _id: "1", name: "React" },
+      { _id: "2", name: "JavaScript" },
+    ],
+    author: { _id: "1", name: "John Doe" },
+    upvotes: 10,
+    answers: 5,
+    views: 100,
+    createdAt: new Date(),
+  },
+];
+
+interface SearchParams {
+  searchParams: Promise<{ [key: string]: string }>;
+}
+
+const Home: FunctionComponent<SearchParams> = async ({ searchParams }) => {
+  const { query = "" } = await searchParams;
+
+  const filteredQuestions = questions.filter((question) => {
+    return question.title.toLowerCase().includes(query?.toLowerCase());
+  });
+
   return (
     <>
       <section className="flex w-full flex-col-reverse justify-between sm:flex-row sm:items-center">
@@ -26,11 +67,9 @@ const Home: FunctionComponent = async () => {
       </section>
       HomeFilter
       <div className="mt-10 flex w-full flex-col gap-6">
-        <p>Question Card 1</p>
-        <p>Question Card 1</p>
-        <p>Question Card 1</p>
-        <p>Question Card 1</p>
-        <p>Question Card 1</p>
+        {filteredQuestions.map((question) => (
+          <h1 key={question._id}>{question.title}</h1>
+        ))}
       </div>
     </>
   );
