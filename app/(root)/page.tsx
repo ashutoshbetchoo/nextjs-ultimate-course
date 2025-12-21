@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { FunctionComponent } from "react";
+import HomeFilter from "@/components/filters/HomeFilter";
 import LocalSearch from "@/components/search/LocalSearch";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/constants/route";
@@ -40,8 +41,9 @@ interface SearchParams {
 }
 
 const Home: FunctionComponent<SearchParams> = async ({ searchParams }) => {
-  const { query = "" } = await searchParams;
+  const { query = "", filter = "" } = await searchParams;
 
+  // TODO: Add filter here
   const filteredQuestions = questions.filter((question) => {
     return question.title.toLowerCase().includes(query?.toLowerCase());
   });
@@ -65,7 +67,7 @@ const Home: FunctionComponent<SearchParams> = async ({ searchParams }) => {
           route="/"
         />
       </section>
-      HomeFilter
+      <HomeFilter></HomeFilter>
       <div className="mt-10 flex w-full flex-col gap-6">
         {filteredQuestions.map((question) => (
           <h1 key={question._id}>{question.title}</h1>
