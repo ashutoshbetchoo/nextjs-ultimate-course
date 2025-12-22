@@ -3,9 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import dynamic from "next/dynamic";
-import { type FunctionComponent, useRef } from "react";
+import { type FunctionComponent, type KeyboardEvent, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
+import type z from "zod";
 import { AskQuestionSchema } from "@/lib/validations";
+import TagCard from "../cards/TagCard";
 // import Editor from "../editor";
 import { Button } from "../ui/button";
 import {
@@ -34,7 +36,49 @@ const QuestionForm: FunctionComponent = () => {
     },
   });
 
-  const handleCreateQuestion = () => {};
+  const handleInputKeyDown = (
+    e: KeyboardEvent<HTMLInputElement>,
+    field: { value: string[] },
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      const tagInput = e.currentTarget.value.trim();
+
+      if (tagInput && tagInput.length < 15 && !field.value.includes(tagInput)) {
+        form.setValue("tags", [...field.value, tagInput]);
+        e.currentTarget.value = "";
+        form.clearErrors("tags");
+      } else if (tagInput.length > 15) {
+        form.setError("tags", {
+          type: "manual",
+          message: "Tag should be less than 15 characters",
+        });
+      } else if (field.value.includes(tagInput)) {
+        form.setError("tags", {
+          type: "manual",
+          message: "Tag already exists",
+        });
+      }
+    }
+  };
+
+  const handleTagRemove = (tag: string, field: { value: string[] }) => {
+    const newTags = field.value.filter((t: string) => t !== tag);
+
+    form.setValue("tags", newTags);
+
+    if (newTags.length === 0) {
+      form.setError("tags", {
+        type: "manual",
+        message: "Tags are required",
+      });
+    }
+  };
+
+  const handleCreateQuestion = (data: z.infer<typeof AskQuestionSchema>) => {
+    console.log(data);
+  };
 
   return (
     <form
@@ -123,14 +167,29 @@ const QuestionForm: FunctionComponent = () => {
               </FieldLabel>
               <div>
                 <Input
-                  {...field}
+                  // {...field}
                   aria-invalid={fieldState.invalid}
                   autoComplete="off"
                   className="paragraph-regular background-light700_dark300 light-border-2 text-dark300_light700 no-focus min-h-14 border"
                   id={field.name}
+                  onKeyDown={(e) => handleInputKeyDown(e, field)}
                   placeholder="Add tags..."
                 />
-                Tags
+                {field.value.length > 0 && (
+                  <div className="flex-start mt-2.5 flex-wrap gap-2.5">
+                    {field.value?.map((tag: string) => (
+                      <TagCard
+                        _id={tag}
+                        compact
+                        handleRemove={() => handleTagRemove(tag, field)}
+                        isButton
+                        key={tag}
+                        name={tag}
+                        remove
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
               <FieldDescription className="body-regular text-light-500 mt-2.5">
                 Add up to 3 tags to describe what your question is about. You
