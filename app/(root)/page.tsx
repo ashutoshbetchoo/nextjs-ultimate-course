@@ -6,6 +6,9 @@ import LocalSearch from "@/components/search/LocalSearch";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/constants/route";
 
+// import handleError from "@/lib/handles/error";
+// import dbConnect from "@/lib/mongoose";
+
 const questions = [
   {
     _id: "1",
@@ -51,7 +54,18 @@ interface SearchParams {
   searchParams: Promise<{ [key: string]: string }>;
 }
 
+// const test = async () => {
+//   try {
+//     // await dbConnect();
+//     throw new Error("Test error");
+//   } catch (error) {
+//     return handleError(error);
+//   }
+// };
+
 const Home: FunctionComponent<SearchParams> = async ({ searchParams }) => {
+  // const result = await test();
+
   const { query = "", filter = "" } = await searchParams;
 
   // TODO: Add filter here
