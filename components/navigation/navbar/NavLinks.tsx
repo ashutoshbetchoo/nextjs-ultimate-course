@@ -11,13 +11,14 @@ import { cn } from "@/lib/utils";
 
 type NavLinksProps = {
   isMobileNav?: boolean;
+  userId?: string;
 };
 
 const NavLinks: FunctionComponent<NavLinksProps> = ({
   isMobileNav = false,
+  userId,
 }) => {
   const pathname = usePathname();
-  const userId = 1;
 
   return (
     <>

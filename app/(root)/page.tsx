@@ -54,18 +54,7 @@ interface SearchParams {
   searchParams: Promise<{ [key: string]: string }>;
 }
 
-// const test = async () => {
-//   try {
-//     // await dbConnect();
-//     throw new Error("Test error");
-//   } catch (error) {
-//     return handleError(error);
-//   }
-// };
-
 const Home: FunctionComponent<SearchParams> = async ({ searchParams }) => {
-  // const result = await test();
-
   const { query = "", filter = "" } = await searchParams;
 
   // TODO: Add filter here
