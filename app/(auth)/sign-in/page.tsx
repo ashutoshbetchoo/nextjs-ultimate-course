@@ -2,6 +2,7 @@
 
 import type { FunctionComponent } from "react";
 import AuthForm from "@/components/forms/AuthForm";
+import { signInWithCredentials } from "@/lib/actions/auth.action";
 import { SignInSchema } from "@/lib/validations";
 
 type SignInProps = {};
@@ -11,7 +12,7 @@ const SignIn: FunctionComponent<SignInProps> = () => {
     <AuthForm
       defaultValues={{ email: "", password: "" }}
       formType="SIGN_IN"
-      onSubmit={(data) => Promise.resolve({ success: true, data })}
+      onSubmit={signInWithCredentials}
       schema={SignInSchema}
     />
   );
