@@ -1,4 +1,4 @@
-import { email, z } from "zod";
+import { z } from "zod";
 
 export const SignInSchema = z.object({
   email: z.email({ error: "Please provide a valid email address." }),
@@ -95,4 +95,12 @@ export const SignInWithOAuthSchema = z.object({
     email: z.email("Please provide a valid email address."),
     image: z.url("Image must be a valid URL.").optional(),
   }),
+});
+
+export const EditQuestionSchema = AskQuestionSchema.extend({
+  questionId: z.string().min(1, "Question ID is required"),
+});
+
+export const GetQuestionSchema = z.object({
+  questionId: z.string().min(1, "Question ID is required"),
 });

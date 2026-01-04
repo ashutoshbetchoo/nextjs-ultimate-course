@@ -1,6 +1,6 @@
-import { model, models, Schema, type Types } from "mongoose";
+import { type Document, model, models, Schema, type Types } from "mongoose";
 
-export interface IInteraction {
+export interface IInteraction extends Document {
   user: Types.ObjectId;
   action: string;
   actionId: Types.ObjectId;

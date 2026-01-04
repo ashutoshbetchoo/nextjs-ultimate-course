@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { signIn } from "@/auth";
-import Account, { type IAccountDoc } from "@/database/account.model";
+import Account, { type IAccount } from "@/database/account.model";
 import User from "@/database/user.model";
 import type { ActionResponse, ErrorResponse } from "@/types/global";
 import action from "../handles/action";
@@ -58,7 +58,7 @@ export async function signUpWithCredentials(
       { session },
     );
 
-    session.commitTransaction();
+    await session.commitTransaction();
 
     await signIn("credentials", { email, password, redirect: false });
 
@@ -93,7 +93,7 @@ export async function signInWithCredentials(
     const existingAccount = (await Account.findOne({
       provider: "credentials",
       providerAccountId: email,
-    })) as IAccountDoc;
+    })) as IAccount;
 
     if (!existingAccount) {
       throw new NotFoundError("Account");

@@ -1,6 +1,6 @@
-import { model, models, Schema, type Types } from "mongoose";
+import { type Document, model, models, Schema, type Types } from "mongoose";
 
-export interface IVote {
+export interface IVote extends Document {
   author: Types.ObjectId;
   id: Types.ObjectId;
   type: "question" | "answer";

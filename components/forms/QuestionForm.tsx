@@ -13,8 +13,9 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import type z from "zod";
 import ROUTES from "@/constants/route";
-import { createQuestion } from "@/lib/actions/question.action";
+import { createQuestion, editQuestion } from "@/lib/actions/question.action";
 import { AskQuestionSchema } from "@/lib/validations";
+import type { Question } from "@/types/global";
 import TagCard from "../cards/TagCard";
 // import Editor from "../editor";
 import { Button } from "../ui/button";
@@ -34,7 +35,15 @@ const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
 });
 
-const QuestionForm: FunctionComponent = () => {
+interface QuestionFormProps {
+  question?: Question;
+  isEdit?: boolean;
+}
+
+const QuestionForm: FunctionComponent<QuestionFormProps> = ({
+  question,
+  isEdit = false,
+}) => {
   const router = useRouter();
   const editorRef = useRef<MDXEditorMethods>(null);
   const [isPending, startTransition] = useTransition();
@@ -42,9 +51,9 @@ const QuestionForm: FunctionComponent = () => {
   const form = useForm({
     resolver: zodResolver(AskQuestionSchema),
     defaultValues: {
-      title: "",
-      content: "",
-      tags: [],
+      title: question?.title || "",
+      content: question?.content || "",
+      tags: question?.tags.map((tag) => tag.name) || [],
     },
   });
 
@@ -92,6 +101,23 @@ const QuestionForm: FunctionComponent = () => {
     data: z.infer<typeof AskQuestionSchema>,
   ) => {
     startTransition(async () => {
+      if (isEdit && question) {
+        const result = await editQuestion({
+          questionId: question._id,
+          ...data,
+        });
+
+        if (result.success && result.data) {
+          toast.success("Question updated successfully");
+          router.push(ROUTES.QUESTION(result.data?._id));
+        } else {
+          toast.error(result.error?.message || "Something went wrong");
+        }
+
+        return;
+      }
+
+      // else
       const result = await createQuestion(data);
 
       if (result.success && result.data) {
@@ -235,6 +261,8 @@ const QuestionForm: FunctionComponent = () => {
               <Spinner className="mr-2 size-4" />
               <span>Submitting...</span>
             </>
+          ) : isEdit ? (
+            "Edit"
           ) : (
             "Ask A Question"
           )}
