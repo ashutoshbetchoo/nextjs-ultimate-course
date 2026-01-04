@@ -3,9 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import dynamic from "next/dynamic";
-import { type FunctionComponent, type KeyboardEvent, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  type FunctionComponent,
+  type KeyboardEvent,
+  useRef,
+  useTransition,
+} from "react";
 import { Controller, useForm } from "react-hook-form";
 import type z from "zod";
+import ROUTES from "@/constants/route";
+import { createQuestion } from "@/lib/actions/question.action";
 import { AskQuestionSchema } from "@/lib/validations";
 import TagCard from "../cards/TagCard";
 // import Editor from "../editor";
@@ -18,6 +26,8 @@ import {
   FieldLabel,
 } from "../ui/field";
 import { Input } from "../ui/input";
+import { toast } from "../ui/sonner";
+import { Spinner } from "../ui/spinner";
 
 const Editor = dynamic(() => import("@/components/editor"), {
   // Make sure we turn SSR off
@@ -25,7 +35,9 @@ const Editor = dynamic(() => import("@/components/editor"), {
 });
 
 const QuestionForm: FunctionComponent = () => {
+  const router = useRouter();
   const editorRef = useRef<MDXEditorMethods>(null);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm({
     resolver: zodResolver(AskQuestionSchema),
@@ -76,8 +88,19 @@ const QuestionForm: FunctionComponent = () => {
     }
   };
 
-  const handleCreateQuestion = (data: z.infer<typeof AskQuestionSchema>) => {
-    console.log(data);
+  const handleCreateQuestion = async (
+    data: z.infer<typeof AskQuestionSchema>,
+  ) => {
+    startTransition(async () => {
+      const result = await createQuestion(data);
+
+      if (result.success && result.data) {
+        toast.success("Question created successfully");
+        router.push(ROUTES.QUESTION(result.data?._id));
+      } else {
+        toast.error(result.error?.message || "Something went wrong");
+      }
+    });
   };
 
   return (
@@ -202,8 +225,19 @@ const QuestionForm: FunctionComponent = () => {
       </FieldGroup>
 
       <div className="mt-16 flex justify-end">
-        <Button className="primary-gradient text-light-900 w-fit" type="submit">
-          Ask A Question
+        <Button
+          className="primary-gradient text-light-900 w-fit"
+          disabled={isPending}
+          type="submit"
+        >
+          {isPending ? (
+            <>
+              <Spinner className="mr-2 size-4" />
+              <span>Submitting...</span>
+            </>
+          ) : (
+            "Ask A Question"
+          )}
         </Button>
       </div>
     </form>
