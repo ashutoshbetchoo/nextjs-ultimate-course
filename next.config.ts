@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
         hostname: "img.freepik.com",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+      },
     ],
   },
   serverExternalPackages: ["pino", "pino-pretty"],

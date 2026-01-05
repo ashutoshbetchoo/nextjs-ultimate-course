@@ -1,25 +1,30 @@
 "use server";
 
-import mongoose, { type Types } from "mongoose";
-import Question from "@/database/question.model";
-import Tag, { type ITag } from "@/database/tag.model";
+import mongoose, { type QueryFilter, Types } from "mongoose";
+import Question, {
+  type IQuestion,
+  type QuestionDoc,
+} from "@/database/question.model";
+import Tag, { type TagDoc } from "@/database/tag.model";
 import TagQuestion from "@/database/tag-question.model";
 import type {
   ActionResponse,
   ErrorResponse,
-  Question as IGQuestion,
+  PaginatedSearchParams,
 } from "@/types/global";
 import action from "../handles/action";
 import handleError from "../handles/error";
+import logger from "../logger";
 import {
   AskQuestionSchema,
   EditQuestionSchema,
   GetQuestionSchema,
+  PaginatedSearchParamsSchema,
 } from "../validations";
 
 export async function createQuestion(
   params: CreateQuestionParams,
-): Promise<ActionResponse<IGQuestion>> {
+): Promise<ActionResponse<QuestionDoc>> {
   const validationResult = await action({
     params,
     schema: AskQuestionSchema,
@@ -68,12 +73,15 @@ export async function createQuestion(
         question: question._id,
       });
     }
-
     await TagQuestion.insertMany(tagQuestionDocuments, { session });
 
     await Question.findByIdAndUpdate(
       question._id,
-      { $push: { tags: { each: tagIds } } },
+      {
+        $push: {
+          tags: { $each: tagIds.map((id) => new Types.ObjectId(id)) },
+        },
+      },
       { session },
     );
 
@@ -90,7 +98,7 @@ export async function createQuestion(
 
 export async function editQuestion(
   params: EditQuestionParams,
-): Promise<ActionResponse<IGQuestion>> {
+): Promise<ActionResponse<QuestionDoc>> {
   const validationResult = await action({
     params,
     schema: EditQuestionSchema,
@@ -126,13 +134,18 @@ export async function editQuestion(
       await question.save({ session });
     }
 
-    const tagsToAdd = tags.filter(
-      (tag: string) => !question.tags.includes(tag.toLowerCase()),
-    );
+    // since it is populated it is a TagDoc not ObjectIds
+    const questionTags: TagDoc[] = question.tags as unknown as TagDoc[];
 
-    const tagsToRemove = question.tags.filter(
-      (tag: ITag) => !tags.includes(tag.name.toLowerCase()),
-    );
+    const tagsToAdd = tags.filter((tag: string) => {
+      return questionTags.some((t: TagDoc) =>
+        t.name.toLowerCase().includes(tag.toLowerCase()),
+      );
+    });
+
+    const tagsToRemove = questionTags.filter((tag: TagDoc) => {
+      return !tags.some((t) => t.toLowerCase() === tag.name.toLowerCase());
+    });
 
     const newTagDocuments = [];
 
@@ -140,7 +153,7 @@ export async function editQuestion(
       for (const tag of tagsToAdd) {
         const existingTag = await Tag.findOneAndUpdate(
           {
-            name: { $regex: new RegExp(`^${tag}$`, "i") },
+            name: { $regex: `^${tag}$`, $options: "i" },
           },
           { $setOnInsert: { name: tag }, $inc: { questions: 1 } },
           { upsert: true, new: true, session },
@@ -158,7 +171,7 @@ export async function editQuestion(
     }
 
     if (tagsToRemove.length > 0) {
-      const tagIdsToRemove = tagsToRemove.map((tag: ITag) => tag._id);
+      const tagIdsToRemove = tagsToRemove.map((tag: TagDoc) => tag._id);
 
       await Tag.updateMany(
         { _id: { $in: tagIdsToRemove } },
@@ -172,7 +185,8 @@ export async function editQuestion(
       );
 
       question.tags = question.tags.filter(
-        (tagId: Types.ObjectId) => !tagsToRemove.includes(tagId),
+        (tag: Types.ObjectId) =>
+          !tagIdsToRemove.some((id: Types.ObjectId) => id.equals(tag._id)),
       );
     }
 
@@ -195,7 +209,7 @@ export async function editQuestion(
 
 export async function getQuestion(
   params: GetQuestionParams,
-): Promise<ActionResponse<IGQuestion>> {
+): Promise<ActionResponse<QuestionDoc>> {
   const validationResult = await action({
     params,
     schema: GetQuestionSchema,
@@ -217,6 +231,74 @@ export async function getQuestion(
     }
 
     return { success: true, data: JSON.parse(JSON.stringify(question)) };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function getQuestions(
+  params: PaginatedSearchParams,
+): Promise<ActionResponse<{ questions: QuestionDoc[]; isNext: boolean }>> {
+  const validationResult = await action({
+    params,
+    schema: PaginatedSearchParamsSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { page = 1, pageSize = 10, query, filter } = params;
+
+  const skip = (Number(page) - 1) * pageSize;
+  const limit = Number(pageSize);
+
+  const filterQuery: QueryFilter<QuestionDoc> = {};
+
+  if (filter === "recommended")
+    return { success: true, data: { questions: [], isNext: false } };
+
+  if (query) {
+    filterQuery.$or = [
+      { title: { $regex: new RegExp(query, "i") } },
+      { content: { $regex: new RegExp(query, "i") } },
+    ];
+  }
+
+  let sortCriteria = {};
+
+  switch (filter) {
+    case "newest":
+      sortCriteria = { createdAt: -1 };
+      break;
+    case "unanswered":
+      filterQuery.answers = 0;
+      sortCriteria = { createdAt: -1 };
+      break;
+    case "popular":
+      sortCriteria = { upvotes: -1 };
+      break;
+    default:
+      sortCriteria = { createdAt: -1 };
+      break;
+  }
+
+  try {
+    const totalQuestions = await Question.countDocuments(filterQuery);
+    const questions = await Question.find(filterQuery)
+      .populate("tags", "name")
+      .populate("author", "name image")
+      .lean()
+      .sort(sortCriteria)
+      .skip(skip)
+      .limit(limit);
+
+    const isNext = totalQuestions > skip + questions.length;
+
+    return {
+      success: true,
+      data: { questions: JSON.parse(JSON.stringify(questions)), isNext },
+    };
   } catch (error) {
     return handleError(error) as ErrorResponse;
   }

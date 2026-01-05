@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { FunctionComponent } from "react";
 import ROUTES from "@/constants/route";
 import { getTimestamp } from "@/lib/utils";
+import type { Question, Tag } from "@/types/global";
 import Metric from "../Metric";
 import TagCard from "./TagCard";
 

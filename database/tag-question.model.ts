@@ -1,11 +1,20 @@
-import { type Document, model, models, Schema, type Types } from "mongoose";
+import {
+  type Document,
+  type Model,
+  model,
+  models,
+  Schema,
+  type Types,
+} from "mongoose";
 
-export interface ITagQuestion extends Document {
+export interface ITagQuestion {
   tag: Types.ObjectId;
   question: Types.ObjectId;
 }
 
-const TagQuestionSchema = new Schema<ITagQuestion>(
+export type TagQuestionDoc = ITagQuestion & Document;
+
+const TagQuestionSchema = new Schema<TagQuestionDoc>(
   {
     tag: { type: Schema.Types.ObjectId, ref: "Tag", required: true },
     question: { type: Schema.Types.ObjectId, ref: "Question", required: true },
@@ -15,7 +24,8 @@ const TagQuestionSchema = new Schema<ITagQuestion>(
   },
 );
 
-const TagQuestion =
-  models?.TagQuestion || model<ITagQuestion>("TagQuestion", TagQuestionSchema);
+const TagQuestion: Model<TagQuestionDoc> =
+  (models.TagQuestion as Model<TagQuestionDoc>) ||
+  model<TagQuestionDoc>("TagQuestion", TagQuestionSchema);
 
 export default TagQuestion;

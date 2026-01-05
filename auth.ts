@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
-import type { IAccountDoc } from "./database/account.model";
-import type { IUserDoc } from "./database/user.model";
+import type { AccountDoc } from "./database/account.model";
+import type { UserDoc } from "./database/user.model";
 import { api } from "./lib/api";
 import { SignInSchema } from "./lib/validations";
 import type { ActionResponse } from "./types/global";
@@ -20,13 +20,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           const { data: existingAccount } = (await api.accounts.getByProvider(
             email,
-          )) as ActionResponse<IAccountDoc>;
+          )) as ActionResponse<AccountDoc>;
 
           if (!existingAccount) return null;
 
           const { data: existingUser } = (await api.users.getById(
             existingAccount.userId.toString(),
-          )) as ActionResponse<IUserDoc>;
+          )) as ActionResponse<UserDoc>;
 
           if (!existingUser) return null;
 
@@ -62,7 +62,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               ? // biome-ignore lint/style/noNonNullAssertion: <email will always be present for credentials>
                 token.email!
               : account.providerAccountId,
-          )) as ActionResponse<IAccountDoc>;
+          )) as ActionResponse<AccountDoc>;
 
         if (!success || !existingAccount) return token;
 
@@ -75,7 +75,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async signIn({ user, profile, account }) {
       if (account?.provider === "credentials") return true;
-
       if (!account || !user) return false;
 
       const userInfo = {

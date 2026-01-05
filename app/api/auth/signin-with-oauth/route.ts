@@ -6,6 +6,7 @@ import Account from "@/database/account.model";
 import User from "@/database/user.model";
 import handleError from "@/lib/handles/error";
 import { ValidationError } from "@/lib/http-errors";
+import logger from "@/lib/logger";
 import dbConnect from "@/lib/mongoose";
 import { SignInWithOAuthSchema } from "@/lib/validations";
 import type { APIErrorResponse } from "@/types/global";
@@ -18,7 +19,6 @@ export async function POST(request: Request) {
   const session = await mongoose.startSession();
 
   session.startTransaction();
-
   try {
     // validate the json
     const validatedData = SignInWithOAuthSchema.safeParse({

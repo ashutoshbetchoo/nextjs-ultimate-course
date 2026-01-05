@@ -1,6 +1,13 @@
-import { type Document, model, models, Schema, type Types } from "mongoose";
+import {
+  type Document,
+  type Model,
+  model,
+  models,
+  Schema,
+  type Types,
+} from "mongoose";
 
-export interface IAnswer extends Document {
+export interface IAnswer {
   author: Types.ObjectId;
   question: Types.ObjectId;
   content: string;
@@ -8,7 +15,9 @@ export interface IAnswer extends Document {
   downvotes: number;
 }
 
-const AnswerSchema = new Schema<IAnswer>(
+export type AnswerDoc = IAnswer & Document;
+
+const AnswerSchema = new Schema<AnswerDoc>(
   {
     author: { type: Schema.Types.ObjectId, ref: "User", required: true },
     question: { type: Schema.Types.ObjectId, ref: "Question", required: true },
@@ -21,6 +30,8 @@ const AnswerSchema = new Schema<IAnswer>(
   },
 );
 
-const Answer = models?.Answer || model<IAnswer>("Answer", AnswerSchema);
+const Answer: Model<AnswerDoc> =
+  (models.Answer as Model<AnswerDoc>) ||
+  model<AnswerDoc>("Answer", AnswerSchema);
 
 export default Answer;

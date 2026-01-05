@@ -1,11 +1,20 @@
-import { type Document, model, models, Schema, type Types } from "mongoose";
+import {
+  type Document,
+  type Model,
+  model,
+  models,
+  Schema,
+  type Types,
+} from "mongoose";
 
-export interface ICollection extends Document {
+export interface ICollection {
   author: Types.ObjectId;
   question: Types.ObjectId;
 }
 
-const CollectionSchema = new Schema<ICollection>(
+export type CollectionDoc = ICollection & Document;
+
+const CollectionSchema = new Schema<CollectionDoc>(
   {
     author: { type: Schema.Types.ObjectId, ref: "User", required: true },
     question: { type: Schema.Types.ObjectId, ref: "Question", required: true },
@@ -15,7 +24,8 @@ const CollectionSchema = new Schema<ICollection>(
   },
 );
 
-const Collection =
-  models?.Collection || model<ICollection>("Collection", CollectionSchema);
+const Collection: Model<CollectionDoc> =
+  (models.Collection as Model<CollectionDoc>) ||
+  model<CollectionDoc>("Collection", CollectionSchema);
 
 export default Collection;

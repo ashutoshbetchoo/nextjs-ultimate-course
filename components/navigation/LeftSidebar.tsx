@@ -10,7 +10,7 @@ import NavLinks from "./navbar/NavLinks";
 const LeftSidebar: FunctionComponent = async () => {
   const session = await auth();
 
-  const userId = session?.user?.id;
+  const userId = session?.user?.id || undefined;
 
   return (
     <section className="custom-scrollbar background-light900_dark200 light-border shadow-light-300 sticky top-0 left-0 flex h-screen flex-col justify-between overflow-y-auto border-r p-6 pt-36 max-sm:hidden lg:w-66.5 dark:shadow-none">

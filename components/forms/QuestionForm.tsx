@@ -109,7 +109,7 @@ const QuestionForm: FunctionComponent<QuestionFormProps> = ({
 
         if (result.success && result.data) {
           toast.success("Question updated successfully");
-          router.push(ROUTES.QUESTION(result.data?._id));
+          router.push(ROUTES.QUESTION(result.data?._id.toString()));
         } else {
           toast.error(result.error?.message || "Something went wrong");
         }
@@ -122,7 +122,7 @@ const QuestionForm: FunctionComponent<QuestionFormProps> = ({
 
       if (result.success && result.data) {
         toast.success("Question created successfully");
-        router.push(ROUTES.QUESTION(result.data?._id));
+        router.push(ROUTES.QUESTION(result.data?._id.toString()));
       } else {
         toast.error(result.error?.message || "Something went wrong");
       }

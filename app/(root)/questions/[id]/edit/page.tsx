@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import QuestionForm from "@/components/forms/QuestionForm";
 import ROUTES from "@/constants/route";
 import { getQuestion } from "@/lib/actions/question.action";
-import type { RouteParams } from "@/types/global";
+import type { Question, RouteParams } from "@/types/global";
 
 interface EditQuestionProps extends RouteParams {}
 
@@ -32,7 +32,7 @@ const EditQuestion: FunctionComponent<EditQuestionProps> = async ({
       <h1 className="h1-bold text-dark100_light900">Edit question</h1>
 
       <div className="mt-9">
-        <QuestionForm isEdit question={question} />
+        <QuestionForm isEdit question={question as unknown as Question} />
       </div>
     </main>
   );
