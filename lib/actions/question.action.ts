@@ -170,6 +170,8 @@ export async function editQuestion(
       }
     }
 
+    logger.error(tagsToRemove);
+
     if (tagsToRemove.length > 0) {
       const tagIdsToRemove = tagsToRemove.map((tag: TagDoc) => tag._id);
 
