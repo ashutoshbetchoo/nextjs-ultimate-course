@@ -192,6 +192,8 @@ export async function editQuestion(
       );
     }
 
+    logger.error(newTagDocuments);
+
     if (newTagDocuments.length > 0) {
       await TagQuestion.insertMany(newTagDocuments, { session });
     }
